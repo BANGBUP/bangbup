@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 방법닷컴 (bangbup.com)
 
-## Getting Started
+> 모든 문제를 해결하는 방법을 공유하고 실천하는 SNS형 노하우 플랫폼
 
-First, run the development server:
+설계 문서: [docs/PROJECT_DESIGN.md](./docs/PROJECT_DESIGN.md)
+
+## 기술 스택
+- **Next.js 15** (App Router, TypeScript, Turbopack)
+- **Tailwind CSS v4**
+- **Prisma** + **Supabase** (Postgres / Auth / Storage)
+- **Zustand** + **TanStack Query**
+- **Zod** + **React Hook Form**
+
+## 시작하기
 
 ```bash
+# 의존성 설치
+npm install
+
+# 환경 변수 설정 (Supabase 프로젝트 생성 후)
+cp .env.example .env.local
+# .env.local 에 DATABASE_URL, SUPABASE 키 입력
+
+# Prisma 스키마 적용
+npx prisma generate
+npx prisma db push
+
+# 개발 서버
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 디렉토리 구조
+```
+src/
+├── app/             # Next.js App Router
+├── components/      # UI 컴포넌트
+└── lib/
+    ├── prisma.ts    # Prisma 클라이언트
+    ├── supabase/    # Supabase 클라이언트 (client/server)
+    └── utils.ts     # 공용 유틸 + 방법 점수 계산
+prisma/
+└── schema.prisma    # DB 스키마
+docs/
+└── PROJECT_DESIGN.md
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 배포
+- **호스팅**: Vercel
+- **DB**: Supabase
+- **스토리지/CDN**: Supabase Storage + Cloudflare (Phase 2)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## MVP 체크리스트 (Phase 1)
+- [x] 프로젝트 세팅
+- [x] Prisma 스키마
+- [ ] Supabase Auth 연결
+- [ ] 방법 CRUD
+- [ ] 피드 (최신순)
+- [ ] 문제 해시태그
+- [ ] 인터랙션 (저장/써봄/후기)
+- [ ] 검색
+- [ ] 방법 요청
+- [ ] 프로필

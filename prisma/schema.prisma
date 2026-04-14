@@ -1,0 +1,194 @@
+// 방법닷컴 Prisma 스키마
+// 상세: docs/PROJECT_DESIGN.md §3.2
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────── User ───────────────
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  handle       String   @unique
+  name         String?
+  avatarUrl    String?
+  bio          String?
+  tier         Tier     @default(NONE)
+  methodScore  Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  methods        Method[]
+  interactions   Interaction[]
+  requests       Request[]
+  followedBy     Follow[]      @relation("followee")
+  following      Follow[]      @relation("follower")
+
+  @@index([methodScore])
+}
+
+enum Tier {
+  NONE
+  BRONZE
+  SILVER
+  GOLD
+  DIAMOND
+}
+
+// ─────────────── Method ───────────────
+model Method {
+  id          String   @id @default(cuid())
+  authorId    String
+  title       String
+  situation   String   // IF
+  action      String   // THEN
+  result      String   // SO
+  mediaUrl    String?
+  difficulty  Int      @default(1) // 1-5
+  cost        Cost     @default(FREE)
+  duration    String?  // "5분", "21일"
+
+  views       Int      @default(0)
+  saves       Int      @default(0)
+  tried       Int      @default(0)
+  successes   Int      @default(0)
+  fails       Int      @default(0)
+  remixes     Int      @default(0)
+  score       Int      @default(0)
+
+  parentId    String?  // Remix 원본
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author       User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent       Method?         @relation("MethodRemix", fields: [parentId], references: [id])
+  children     Method[]        @relation("MethodRemix")
+  problems     MethodProblem[]
+  interactions Interaction[]
+  answers      RequestAnswer[]
+
+  @@index([authorId])
+  @@index([score])
+  @@index([createdAt])
+}
+
+enum Cost {
+  FREE
+  LOW
+  MID
+  HIGH
+}
+
+// ─────────────── Problem (해시태그) ───────────────
+model Problem {
+  id           String   @id @default(cuid())
+  title        String   @unique
+  slug         String   @unique
+  category     String?
+  methodCount  Int      @default(0)
+  requestCount Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  methods  MethodProblem[]
+  requests Request[]
+
+  @@index([category])
+}
+
+model MethodProblem {
+  methodId  String
+  problemId String
+
+  method  Method  @relation(fields: [methodId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@id([methodId, problemId])
+  @@index([problemId])
+}
+
+// ─────────────── Interaction ───────────────
+model Interaction {
+  id        String          @id @default(cuid())
+  userId    String
+  methodId  String
+  type      InteractionType
+  comment   String?         // 후기 한줄평
+  createdAt DateTime        @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  method Method @relation(fields: [methodId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, methodId, type])
+  @@index([methodId, type])
+  @@index([userId, type])
+}
+
+enum InteractionType {
+  VIEW
+  SAVE
+  TRIED
+  SUCCESS
+  FAIL
+  REMIX
+}
+
+// ─────────────── Request (방법 요청) ───────────────
+model Request {
+  id          String        @id @default(cuid())
+  requesterId String
+  title       String
+  situation   String
+  problem     String
+  tried       String?
+  constraints String?
+  desired     String
+  bounty      Int           @default(0)
+  upvotes     Int           @default(0)
+  status      RequestStatus @default(OPEN)
+  problemId   String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  requester User            @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+  tag       Problem?        @relation(fields: [problemId], references: [id])
+  answers   RequestAnswer[]
+
+  @@index([status, createdAt])
+}
+
+enum RequestStatus {
+  OPEN
+  ANSWERED
+  RESOLVED
+}
+
+model RequestAnswer {
+  id        String   @id @default(cuid())
+  requestId String
+  methodId  String
+  chosen    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  request Request @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  method  Method  @relation(fields: [methodId], references: [id], onDelete: Cascade)
+
+  @@unique([requestId, methodId])
+}
+
+// ─────────────── Follow ───────────────
+model Follow {
+  followerId String
+  followeeId String
+  createdAt  DateTime @default(now())
+
+  follower User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followee User @relation("followee", fields: [followeeId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followeeId])
+}
