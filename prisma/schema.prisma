@@ -50,17 +50,22 @@ model Method {
   action      String   // THEN
   result      String   // SO
   mediaUrl    String?
-  difficulty  Int      @default(1) // 1-5
+  detail      String?  // 마크다운 상세 설명 (선택, 최대 2000자)
+  sources     String[] // 출처 URL (최대 3개)
+  difficulty  Int      @default(1)
   cost        Cost     @default(FREE)
-  duration    String?  // "5분", "21일"
+  duration    String?
 
   views       Int      @default(0)
   saves       Int      @default(0)
+  usefuls     Int      @default(0)
   tried       Int      @default(0)
   successes   Int      @default(0)
   fails       Int      @default(0)
   remixes     Int      @default(0)
+  outdated    Int      @default(0)
   score       Int      @default(0)
+  lastActivityAt DateTime @default(now())
 
   parentId    String?  // Remix 원본
   createdAt   DateTime @default(now())
@@ -70,11 +75,13 @@ model Method {
   parent       Method?         @relation("MethodRemix", fields: [parentId], references: [id])
   children     Method[]        @relation("MethodRemix")
   problems     MethodProblem[]
+  contexts     MethodContext[]
   interactions Interaction[]
   answers      RequestAnswer[]
 
   @@index([authorId])
   @@index([score])
+  @@index([lastActivityAt])
   @@index([createdAt])
 }
 
@@ -112,14 +119,37 @@ model MethodProblem {
   @@index([problemId])
 }
 
+// ─────────────── Context (버전/시점/기기 등 부가 메타데이터) ───────────────
+model Context {
+  id          String   @id @default(cuid())
+  title       String   @unique
+  slug        String   @unique
+  methodCount Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  methods MethodContext[]
+}
+
+model MethodContext {
+  methodId  String
+  contextId String
+
+  method  Method  @relation(fields: [methodId], references: [id], onDelete: Cascade)
+  context Context @relation(fields: [contextId], references: [id], onDelete: Cascade)
+
+  @@id([methodId, contextId])
+  @@index([contextId])
+}
+
 // ─────────────── Interaction ───────────────
 model Interaction {
-  id        String          @id @default(cuid())
-  userId    String
-  methodId  String
-  type      InteractionType
-  comment   String?         // 후기 한줄평
-  createdAt DateTime        @default(now())
+  id             String            @id @default(cuid())
+  userId         String
+  methodId       String
+  type           InteractionType
+  comment        String?           // 자유 설명
+  outdatedReason OutdatedReason?   // OUTDATED 전용 카테고리
+  createdAt      DateTime          @default(now())
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   method Method @relation(fields: [methodId], references: [id], onDelete: Cascade)
@@ -132,10 +162,21 @@ model Interaction {
 enum InteractionType {
   VIEW
   SAVE
+  USEFUL
   TRIED
   SUCCESS
   FAIL
   REMIX
+  OUTDATED
+}
+
+enum OutdatedReason {
+  CONTEXT_CHANGED   // 환경/버전이 바뀜
+  BETTER_ALTERNATIVE // 더 나은 대안
+  EVIDENCE_REFUTED  // 연구/사실 반박
+  HARMFUL           // 위험/해로움
+  UNCLEAR           // 설명 부족
+  OTHER             // 기타
 }
 
 // ─────────────── Request (방법 요청) ───────────────
