@@ -6,13 +6,20 @@ export default async function Home() {
   const user = await getCurrentUser()
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-8 px-6 text-center">
-      <div className="space-y-3">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          방법닷컴
+    <main className="flex min-h-[calc(100vh-3.5rem)] flex-col items-center justify-center gap-10 px-6 text-center">
+      <div className="space-y-5">
+        <div className="text-muted-foreground text-sm font-medium uppercase tracking-[0.2em]">
+          bangbup.com
+        </div>
+        <h1 className="text-balance text-5xl font-bold tracking-tight sm:text-6xl">
+          모든 문제엔{' '}
+          <span className="bg-gradient-to-r from-sky-500 via-emerald-500 to-amber-500 bg-clip-text text-transparent">
+            방법
+          </span>
+          이 있다
         </h1>
-        <p className="text-muted-foreground text-lg">
-          모든 문제에는 방법이 있다. 공유하고, 실천하고, 보상받자.
+        <p className="text-muted-foreground mx-auto max-w-md text-balance text-lg">
+          짧게 공유하고, 직접 써보고, 효과 본 만큼 보상받는 노하우 SNS.
         </p>
       </div>
 

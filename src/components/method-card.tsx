@@ -183,7 +183,7 @@ export function MethodCard({
   const isOutdated = counts.outdated >= 3 || active.has('OUTDATED')
 
   return (
-    <Card className="w-full">
+    <Card className="w-full transition hover:shadow-md">
       <CardHeader className="flex-row items-center gap-3 space-y-0 pb-3">
         <Link href={`/@${author.handle}`} className="flex items-center gap-2">
           <Avatar className="size-8">
@@ -274,8 +274,8 @@ export function MethodCard({
           </Link>
         )}
 
-        <Link href={`/m/${method.id}`} className="block space-y-3 hover:opacity-90">
-          <h3 className="break-keep text-lg font-semibold leading-snug">
+        <Link href={`/m/${method.id}`} className="block space-y-4 hover:opacity-95">
+          <h3 className="break-keep text-xl font-bold tracking-tight leading-tight">
             {method.title}
           </h3>
           {method.mediaUrl && (
@@ -283,14 +283,14 @@ export function MethodCard({
             <img
               src={method.mediaUrl}
               alt={method.title}
-              className="max-h-80 w-full rounded-md object-cover"
+              className="max-h-80 w-full rounded-lg object-cover"
               loading="lazy"
             />
           )}
-          <div className="space-y-2 text-sm">
-            <Line label="IF" text={method.situation} />
-            <Line label="THEN" text={method.action} />
-            <Line label="SO" text={method.result} />
+          <div className="space-y-2.5 text-[15px] leading-relaxed">
+            <Line tone="if" label="상황" text={method.situation} />
+            <Line tone="then" label="행동" text={method.action} />
+            <Line tone="so" label="결과" text={method.result} />
           </div>
         </Link>
 
@@ -594,13 +594,50 @@ function formatUrl(url: string): string {
   }
 }
 
-function Line({ label, text }: { label: string; text: string }) {
+type Tone = 'if' | 'then' | 'so'
+
+const TONE_STYLES: Record<
+  Tone,
+  { label: string; border: string; text: string; bg: string }
+> = {
+  if: {
+    label: 'text-sky-700 dark:text-sky-400',
+    border: 'border-sky-500/60',
+    text: '',
+    bg: 'bg-sky-50 dark:bg-sky-950/40',
+  },
+  then: {
+    label: 'text-emerald-700 dark:text-emerald-400',
+    border: 'border-emerald-500/60',
+    text: 'font-medium',
+    bg: 'bg-emerald-50 dark:bg-emerald-950/40',
+  },
+  so: {
+    label: 'text-amber-700 dark:text-amber-400',
+    border: 'border-amber-500/60',
+    text: '',
+    bg: 'bg-amber-50 dark:bg-amber-950/40',
+  },
+}
+
+function Line({
+  tone,
+  label,
+  text,
+}: {
+  tone: Tone
+  label: string
+  text: string
+}) {
+  const t = TONE_STYLES[tone]
   return (
-    <div className="flex gap-2">
-      <span className="text-muted-foreground w-10 shrink-0 text-xs font-semibold tracking-wider">
+    <div className={`border-l-2 ${t.border} rounded-r-md ${t.bg} px-3 py-1.5`}>
+      <div
+        className={`${t.label} mb-0.5 text-[11px] font-semibold uppercase tracking-wider`}
+      >
         {label}
-      </span>
-      <span className="flex-1">{text}</span>
+      </div>
+      <div className={t.text}>{text}</div>
     </div>
   )
 }

@@ -11,8 +11,13 @@ export const dynamic = 'force-dynamic'
 export default function FeedPage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">피드</h1>
+      <div className="mb-8 flex items-end justify-between">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">피드</h1>
+          <p className="text-muted-foreground text-sm">
+            최근 공유된 방법들. 써본 사람이 많을수록 위로 올라가요.
+          </p>
+        </div>
         <Link href="/new" className={buttonVariants({ size: 'sm' })}>
           방법 올리기
         </Link>
